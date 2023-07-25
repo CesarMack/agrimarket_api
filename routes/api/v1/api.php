@@ -15,6 +15,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('/user')->group(function(){
-    Route::post('/login', 'App\Http\Controllers\UserLoginController@login');
-    Route::post('/register', 'App\Http\Controllers\UserRegisterController@register');
+    Route::post('/login', 'App\Http\Controllers\AuthenticationController@login');
+    Route::post('/register', 'App\Http\Controllers\AuthenticationController@register');
 });

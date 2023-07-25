@@ -8,10 +8,17 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuids;
+    use HasApiTokens, HasFactory, Notifiable, HasUuids, HasRoles;
+    protected $keyType = 'string';
+    public $incrementing = false;
+    //Role::create(['name' => 'client']);
+    //$user->assignRole('admin');
+    // $role = $user->hasRole('admin');
 
     /**
      * The attributes that are mass assignable.
@@ -23,16 +30,7 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'email',
-        'password',
-        'phone',
-        'street',
-        'ext_num',
-        'int_num',
-        'suburb',
-        'city',
-        'state',
-        'zip_code',
-        'photo'
+        'password'
     ];
 
     /**
@@ -54,4 +52,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function user_data()
+    {
+        return $this->hasOne(UserData::class);
+    }
 }
