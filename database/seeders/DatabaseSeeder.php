@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,6 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Role::create(['name' => 'admin']);
+        Role::create(['name' => 'farmer']);
+        Role::create(['name' => 'client']);
+        // php artisan passport:client --personal
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

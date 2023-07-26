@@ -2,16 +2,19 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Auth\Middleware\Authenticate as Middleware;
+use Closure;
+use Laravel\Passport\Exceptions\AuthenticationException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
-class Authenticate extends Middleware
+class Authenticate
 {
-    /**
-     * Get the path the user should be redirected to when they are not authenticated.
-     */
-    protected function redirectTo(Request $request): ?string
+    public function handle($request, Closure $next)
     {
-        return $request->expectsJson() ? null : route('login');
+        if (Auth::guard('api')->check()) {
+            return $next($request);
+        }
+
+        throw new AuthenticationException('Unauthenticated.');
     }
 }
