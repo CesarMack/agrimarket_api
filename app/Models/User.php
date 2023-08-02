@@ -57,4 +57,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserData::class);
     }
+
+    public function estates()
+    {
+        return $this->hasMany(Estate::class);
+    }
+    public function suggested_products()
+    {
+        return $this->hasMany(SuggestedProduct::class);
+    }
 }
