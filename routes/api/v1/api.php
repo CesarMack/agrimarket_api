@@ -69,4 +69,18 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/{id}', 'App\Http\Controllers\ProductsController@update');
         Route::delete('/{id}', 'App\Http\Controllers\ProductsController@destroy');
     });
+    Route::prefix('/orders')->group(function(){
+        Route::get('/', 'App\Http\Controllers\OrdersController@index');
+        Route::post('/', 'App\Http\Controllers\OrdersController@store');
+        Route::get('/{id}', 'App\Http\Controllers\OrdersController@show');
+        Route::post('/{id}', 'App\Http\Controllers\OrdersController@update');
+        Route::delete('/{id}', 'App\Http\Controllers\OrdersController@destroy');
+    });
+    Route::prefix('/photos')->group(function(){
+        Route::get('/', 'App\Http\Controllers\PhotosController@index');
+        Route::post('/', 'App\Http\Controllers\PhotosController@store');
+        Route::get('/{id}', 'App\Http\Controllers\PhotosController@show');
+        Route::post('/{id}', 'App\Http\Controllers\PhotosController@update');
+        Route::delete('/{id}', 'App\Http\Controllers\PhotosController@destroy');
+    });
 });

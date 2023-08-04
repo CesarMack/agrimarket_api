@@ -16,7 +16,13 @@ class ProductType extends Model
         'category_id'
     ];
 
-    public function category() {
+    public function category()
+    {
         return $this->belongsTo(Category::class);
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
     }
 }

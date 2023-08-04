@@ -21,4 +21,24 @@ class Product extends Model
         'minimum_sale',
         'unit_of_measurement_id'
     ];
+
+    public function unit_of_measurement()
+    {
+        return $this->belongsTo(UnitOfMeasurement::class);
+    }
+
+    public function product_type()
+    {
+        return $this->belongsTo(ProductType::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(Photo::class);
+    }
 }

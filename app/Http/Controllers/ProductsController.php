@@ -43,9 +43,9 @@ class ProductsController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $user = $this->set_user($id);
-        $user->update($request->all());
-        return response()->json(["data" => $user], 200);
+        $product = $this->set_product($id);
+        $product->update($request->all());
+        return response()->json(["data" => $product], 200);
     }
 
     /**
@@ -53,9 +53,9 @@ class ProductsController extends Controller
      */
     public function destroy(string $id)
     {
-        $user = $this->set_user($id);
-        $user->delete();
-        return response()->json(["data" => "Usuario eliminado"], 200);
+        $product = $this->set_product($id);
+        $product->delete();
+        return response()->json(["data" => "Producto eliminado"], 200);
     }
 
     private function set_product(string $id){
