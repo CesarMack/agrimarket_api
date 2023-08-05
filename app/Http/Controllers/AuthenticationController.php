@@ -6,26 +6,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User; // Asegúrate de importar el modelo User
 use Spatie\Permission\Models\Role;
+use Illuminate\Database\QueryException;
 
 class AuthenticationController extends Controller
 {
     public function register(Request $request)
     {
-        $data = $request->all();
-        $user = new User($data);
-        if ($user->save()){
-            ($request->input('type') == "2") ? $user->assignRole('farmer') : $user->assignRole('client');
-            //login
-            $credentials = $request->only('email', 'password');
-            Auth::attempt($credentials);
-            $user = Auth::user();
+        try{
+            $data = $request->all();
+            $user = new User($data);
+            if ($user->save()){
+                ($request->input('type') == "2") ? $user->assignRole('farmer') : $user->assignRole('client');
+                //login
+                $credentials = $request->only('email', 'password');
+                Auth::attempt($credentials);
+                $user = Auth::user();
 
-            if ($user instanceof \App\Models\User) {
-                $accessToken = $user->createToken('token')->accessToken;
-                return response()->json([
-                    "user" => $this->set_data($user, $accessToken)
-                ]);
+                if ($user instanceof \App\Models\User) {
+                    $accessToken = $user->createToken('token')->accessToken;
+                    return response()->json([
+                        "user" => $this->set_data($user, $accessToken)
+                    ]);
+                }
             }
+        } catch (QueryException $e) {
+            return response()->json(["error"=> $e]);
         }
     }
 
