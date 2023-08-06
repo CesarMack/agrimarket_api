@@ -123,7 +123,8 @@ class AdminsController extends Controller
             "data"=>[
                 "admins"=> count($admins),
                 "clients"=>count($clients),
-                "farmers"=>count($farmers)
+                "farmers"=>count($farmers),
+                "total"=>count(User::all())
             ]
         ]);
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
 use App\Models\User;
 use Illuminate\Http\File;
+use Symfony\Component\Console\Input\Input;
 
 class ClientsController extends Controller
 {
@@ -58,7 +59,7 @@ class ClientsController extends Controller
         $user = User::find($user->id);
         $user->update($data);
         $u_data = UserData::where("user_id", $user->user);
-        if(!$u_data){
+        if(!$u_data->isEmpty()){
             $u_data->update($data);
             if($data["photo"]){
                 return response()->json(["data"=>$data["photo"]]);
@@ -72,8 +73,8 @@ class ClientsController extends Controller
         if($data["phone"] && $data["street"]){
             $u_data = new UserData($data);
             if($data["photo"]){
-                return response()->json(["data"=>$request->all()]);
-                $url = $this->store_photo($data["photo"]);
+                //return response()->json(["data"=>$_FILES["photo"]]);
+                $url = $this->store_photo($_FILES["photo"]);
                 $u_data->photo = $url;
             }
             $u_data->user_id = $user->id;

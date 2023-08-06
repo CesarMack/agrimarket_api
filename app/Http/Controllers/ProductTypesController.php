@@ -14,6 +14,9 @@ class ProductTypesController extends Controller
     public function index()
     {
         $product_types = ProductType::all();
+        $product_types = $product_types->map(function ($pt) {
+            return $this->reduce_data($pt);
+        });
         return response()->json(["data" => $product_types], 200);
     }
 
@@ -63,5 +66,15 @@ class ProductTypesController extends Controller
     private function set_product_type(string $id){
         $product_type = ProductType::findOrFail($id);
         return $product_type;
+    }
+
+    private function reduce_data(object $pt){
+        $data = [
+            "id" => $pt->id,
+            "name" => $pt->name,
+            "category" => $pt->category->name,
+            "active" => $pt->active
+        ];
+        return $data;
     }
 }
