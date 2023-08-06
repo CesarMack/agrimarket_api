@@ -46,15 +46,19 @@ class AuthenticationController extends Controller
 
         $user = Auth::user();
 
-        if ($user instanceof \App\Models\User) {
-            $accessToken = $user->createToken('token')->accessToken;
-            return response()->json([
-                "user" => $this->set_data($user, $accessToken)
-            ]);
-        } else {
-            return response()->json([
-                "message" => "Error de autenticación.",
-            ], 401);
+        try{
+            if ($user instanceof \App\Models\User) {
+                $accessToken = $user->createToken('token')->accessToken;
+                return response()->json([
+                    "user" => $this->set_data($user, $accessToken)
+                ]);
+            } else {
+                return response()->json([
+                    "message" => "Error de autenticación.",
+                ], 401);
+            }
+        } catch (QueryException $e) {
+            return response()->json(["error"=> $e]);
         }
     }
 

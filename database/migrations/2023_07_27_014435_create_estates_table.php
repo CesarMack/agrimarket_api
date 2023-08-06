@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('state');
             $table->string('zip_code');
             $table->string('photo')->nullable();
+            $table->boolean('active');
             $table->timestamps();
         });
     }

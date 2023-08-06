@@ -22,7 +22,8 @@ class Estate extends Model
         'city',
         'state',
         'zip_code',
-        'photo'
+        'photo',
+        'active'
     ];
 
     public function user() {

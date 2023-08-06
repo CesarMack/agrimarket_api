@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->uuid('client_id');
+            $table->foreign('client_id')->references('id')->on('users');
+            $table->uuid('farmer_id');
+            $table->foreign('farmer_id')->references('id')->on('users');
             $table->uuid('product_id');
             $table->foreign('product_id')->references('id')->on('products');
             $table->decimal('quantity', 10, 2);
             $table->uuid('unit_of_measurement_id');
             $table->foreign('unit_of_measurement_id')->references('id')->on('unit_of_measurements');
             $table->decimal('total', 10, 2);
-            $table->enum('status', ['activo', 'inactivo', 'pendiente']);
+            $table->enum('status', ['Pendiente', 'Completado', 'Cancelado', 'Rechazado']);
             $table->timestamps();
         });
     }

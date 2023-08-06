@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('minimum_sale', 10, 2);
             $table->uuid('unit_of_measurement_id');
             $table->foreign('unit_of_measurement_id')->references('id')->on('unit_of_measurements');
+            $table->boolean('active');
             $table->timestamps();
         });
     }

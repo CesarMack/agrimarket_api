@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 class OrdersController extends Controller
@@ -30,7 +31,9 @@ class OrdersController extends Controller
         $data = $request->all();
         $user = Auth::guard('api')->user();
         $order = new Order($data);
-        $order->user_id = $user->id;
+        $product = Product::find($data["product_id"]);
+        $order->client_id = $user->id;
+        $order->farmer_id = $product->user_id;
         if($order->save()){
             return response()->json(["data" => $order], 200);
         }else{
