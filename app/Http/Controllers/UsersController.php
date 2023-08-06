@@ -32,7 +32,7 @@ class UsersController extends Controller
 
     public function profile(Request $request){
         $data = $request->all();
-        $user= Auth::guard('api')->user();
+        $user = Auth::guard('api')->user();
         $profile = new UserData($data);
         $profile->user_id = $user->id;
         if($profile->save()){

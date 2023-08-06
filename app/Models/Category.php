@@ -12,7 +12,8 @@ class Category extends Model
     use HasFactory, HasUuids, HasApiTokens;
 
     protected $fillable = [
-        'name'
+        'name',
+        'active'
     ];
 
     public function product_types()

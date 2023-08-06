@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class CategoriesController extends Controller
 {
@@ -54,9 +55,15 @@ class CategoriesController extends Controller
      */
     public function destroy(string $id)
     {
-        $category =  $this->set_category($id);
-        $category->delete();
-        return response()->json(["data" => "Categoria eliminada"], 200);
+        try{
+            $category = Category::find($id);
+            (!$category->status) ? $category->status = true : $category->status = false;
+            if($category->save()){
+                return response()->json(["data" => $category], 200);
+            }
+        }catch(QueryException $e){
+            return response()->json(["error"=> $e], 500);
+        }
     }
 
     private function set_category(string $id){

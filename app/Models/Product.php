@@ -19,8 +19,19 @@ class Product extends Model
         'price_per_measure',
         'stock',
         'minimum_sale',
-        'unit_of_measurement_id'
+        'unit_of_measurement_id',
+        'active'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::saving(function ($model) {
+            if ($model->cantidad <= 0) {
+                $model->active = false;
+            }
+        });
+    }
 
     public function unit_of_measurement()
     {

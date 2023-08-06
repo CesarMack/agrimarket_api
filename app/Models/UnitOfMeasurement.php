@@ -13,7 +13,8 @@ class UnitOfMeasurement extends Model
 
     protected $fillable = [
         'name',
-        'code'
+        'code',
+        'active'
     ];
 
     public function products()

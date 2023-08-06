@@ -18,6 +18,56 @@ Route::prefix('/user')->group(function(){
     Route::post('/login', 'App\Http\Controllers\AuthenticationController@login');
     Route::post('/register', 'App\Http\Controllers\AuthenticationController@register');
 });
+Route::prefix('/admin')->group(function(){
+    Route::post('/login', 'App\Http\Controllers\AdminsController@login');
+});
+Route::middleware(['auth:api', 'App\Http\Middleware\CheckAdmin'])->group(function () {
+    Route::prefix('/admins')->group(function(){
+        Route::get('/me', 'App\Http\Controllers\AdminsController@me');
+        Route::get('/dashboard', 'App\Http\Controllers\AdminsController@dashboard');
+        Route::get('/suggestions', 'App\Http\Controllers\AdminsController@suggested_products');
+        Route::post('/suggestions/{id}', 'App\Http\Controllers\AdminsController@update_suggested_products');
+        Route::get('/users', 'App\Http\Controllers\AdminsController@get_users');
+        Route::post('/find_user', 'App\Http\Controllers\AdminsController@find_user');
+        Route::post('/register', 'App\Http\Controllers\AdminsController@register');
+        Route::post('/me/update', 'App\Http\Controllers\AdminsController@update_me');
+        Route::prefix('/categories')->group(function(){
+            Route::get('/', 'App\Http\Controllers\CategoriesController@index');
+            Route::post('/', 'App\Http\Controllers\CategoriesController@store');
+            Route::get('/{id}', 'App\Http\Controllers\CategoriesController@show');
+            Route::post('/{id}', 'App\Http\Controllers\CategoriesController@update');
+            Route::post('/{id}/active', 'App\Http\Controllers\CategoriesController@destroy');
+        });
+        Route::prefix('/units_of_measurements')->group(function(){
+            Route::get('/', 'App\Http\Controllers\UnitOfMeasurementsController@index');
+            Route::post('/', 'App\Http\Controllers\UnitOfMeasurementsController@store');
+            Route::get('/{id}', 'App\Http\Controllers\UnitOfMeasurementsController@show');
+            Route::post('/{id}', 'App\Http\Controllers\UnitOfMeasurementsController@update');
+            Route::post('/{id}/active', 'App\Http\Controllers\UnitOfMeasurementsController@destroy');
+        });
+    });
+});
+Route::middleware(['auth:api', 'App\Http\Middleware\CheckFarmer'])->group(function () {
+    Route::prefix('/farmers')->group(function(){
+        Route::get('/me', 'App\Http\Controllers\FarmersController@me');
+        Route::get('/dashboard', 'App\Http\Controllers\FarmersController@dashboard');
+        Route::get('/top_sales', 'App\Http\Controllers\FarmersController@top_sales');
+        Route::get('/last_orders', 'App\Http\Controllers\FarmersController@last_orders');
+        Route::get('/orders', 'App\Http\Controllers\FarmersController@orders');
+        Route::post('/update_order_status/{id}', 'App\Http\Controllers\FarmersController@update_order_status');
+        Route::post('/orders/{id}', 'App\Http\Controllers\FarmersController@update_order_status');
+        Route::post('/me/update', 'App\Http\Controllers\FarmersController@update_me');
+    });
+});
+Route::middleware(['auth:api', 'App\Http\Middleware\CheckClient'])->group(function () {
+    Route::prefix('/clients')->group(function(){
+        Route::get('/me', 'App\Http\Controllers\ClientsController@me');
+        Route::get('/dashboard', 'App\Http\Controllers\ClientsController@dashboard');
+        Route::get('/orders', 'App\Http\Controllers\ClientsController@orders');
+        Route::post('/update_order_status/{id}', 'App\Http\Controllers\ClientsController@update_order_status');
+        Route::post('/me/update', 'App\Http\Controllers\ClientsController@update_me');
+    });
+});
 Route::middleware('auth:api')->group(function () {
     Route::prefix('/users')->group(function(){
         Route::get('/', 'App\Http\Controllers\UsersController@index');

@@ -12,11 +12,13 @@ class Order extends Model
     use HasFactory, HasUuids, HasApiTokens;
 
     protected $fillable = [
-        'user_id',
+        'client_id',
+        'farmer_id',
         'product_id',
         'quantity',
         'unit_of_measurement_id',
-        'total'
+        'total',
+        'status'
     ];
 
     public function product()

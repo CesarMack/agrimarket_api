@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\UnitOfMeasurement;
+use Illuminate\Database\QueryException;
 
 class UnitOfMeasurementsController extends Controller
 {
@@ -54,9 +55,15 @@ class UnitOfMeasurementsController extends Controller
      */
     public function destroy(string $id)
     {
-        $unit =  $this->set_category($id);
-        $unit->delete();
-        return response()->json(["data" => "Unidad eliminada"], 200);
+        try{
+            $unit = UnitOfMeasurement::find($id);
+            (!$unit->status) ? $unit->status = true : $unit->status = false;
+            if($unit->save()){
+                return response()->json(["data" => $unit], 200);
+            }
+        }catch(QueryException $e){
+            return response()->json(["error"=> $e], 500);
+        }
     }
 
     private function set_category(string $id){
