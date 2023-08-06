@@ -18,9 +18,6 @@ Route::prefix('/user')->group(function(){
     Route::post('/login', 'App\Http\Controllers\AuthenticationController@login');
     Route::post('/register', 'App\Http\Controllers\AuthenticationController@register');
 });
-Route::prefix('/admin')->group(function(){
-    Route::post('/login', 'App\Http\Controllers\AdminsController@login');
-});
 Route::middleware(['auth:api', 'App\Http\Middleware\CheckAdmin'])->group(function () {
     Route::prefix('/admins')->group(function(){
         Route::get('/me', 'App\Http\Controllers\AdminsController@me');

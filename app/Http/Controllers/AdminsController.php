@@ -69,6 +69,9 @@ class AdminsController extends Controller
     public function get_users()
     {
         $users = User::all();
+        $users = $users->map(function ($user) {
+            return $this->reduce_data($user);
+        });
         return response()->json(["data" => $users], 200);
     }
 
@@ -156,6 +159,17 @@ class AdminsController extends Controller
             'email' => $user->email,
             "role"=> $user->getRoleNames()->first(),
             "access_token" => $token
+        ];
+        return $data;
+    }
+
+    private function reduce_data(object $user){
+        $data = [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            "role"=> $user->getRoleNames()->first()
         ];
         return $data;
     }
