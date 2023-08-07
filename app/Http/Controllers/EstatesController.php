@@ -5,16 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Estate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 class EstatesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $estates = Estate::all();
-        return response()->json(["data" => $estates], 200);
+        $user = Auth::guard('api')->user();
+        $estates = Estate::where('user_id', $user->id)
+                        ->where('active', true)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+        return response()->json(["data"=>$estates]);
     }
 
     /**
@@ -57,9 +59,15 @@ class EstatesController extends Controller
      */
     public function destroy(string $id)
     {
-        $estate =  $this->set_estate($id);
-        $estate->delete();
-        return response()->json(["data" => "Categoria eliminada"], 200);
+        try{
+            $estate = $this->set_estate($id);
+            ($estate->active) ? $estate->active = false : $estate->active = true;
+            if($estate->save()){
+                return response()->json(["data" => $estate], 200);
+            }
+        }catch(QueryException $e){
+            return response()->json(["error"=> $e], 500);
+        }
     }
 
     private function set_estate(string $id){

@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreign('unit_of_measurement_id')->references('id')->on('unit_of_measurements');
             $table->decimal('total', 10, 2);
             $table->enum('status', ['Pendiente', 'Completado', 'Cancelado', 'Rechazado']);
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

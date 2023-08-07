@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

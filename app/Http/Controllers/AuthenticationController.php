@@ -69,7 +69,7 @@ class AuthenticationController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             "role"=> $user->getRoleNames()->first(),
-            "access_token" => $token
+            "access_token" => $token,
         ];
         return $data;
     }

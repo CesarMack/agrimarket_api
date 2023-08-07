@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 class OrdersController extends Controller
 {
@@ -14,8 +15,21 @@ class OrdersController extends Controller
      */
     public function index()
     {
-        $orders = Order::all();
-        return response()->json(["data" => $orders], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('farmer')){
+            $orders = Order::where('farmer_id', $user->id)
+                            ->where('active', true)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$orders]);
+        }elseif($user->hasRole('client')){
+            $orders = Order::where('client_id', $user->id)
+                            ->where('active', true)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$orders]);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);;
     }
 
     /**
@@ -51,9 +65,23 @@ class OrdersController extends Controller
         return response()->json(["data" => $order], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function update_order_status(Request $request, string $id){
+        try{
+            $data = $request->all();
+            $order = Order::find($id);
+            if ($order){
+                $order->status = $data["status"];
+                if($order->save()){
+                    return response()->json(["data" => $order], 200);
+                }
+            }else{
+                return response()->json(["error"=>"Ninguna orden fue encontrada con ese ID"], 400);
+            }
+        }catch(QueryException $e){
+            return response()->json(["error"=> $e], 500);
+        }
+    }
+
     public function destroy(string $id)
     {
         $order = $this->set_order($id);

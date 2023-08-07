@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 
 class CategoriesController extends Controller
 {
@@ -13,13 +14,33 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
-        return response()->json(["data" => $categories], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('admin')){
+            $orders = Category::orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$orders]);
+        }elseif($user->hasRole('farmer')){
+            $orders = Category::where('active', true)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$orders]);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function find_category(Request $request)
+    {
+        if ($request->has('name')) {
+            $name = $request->input('name');
+            $categories = Category::whereRaw("LOWER(name) LIKE LOWER(?)", ["%{$name}%"])
+                ->orderBy('name')
+                ->get();
+            // Retornar los resultados en formato JSON
+            return response()->json(['data' => $categories]);
+        }
+        return response()->json(['error' => "No se encontró un nombre, apellido o e-mail"], 400);
+    }
+
     public function store(Request $request)
     {
         $data = $request->all();
@@ -57,7 +78,7 @@ class CategoriesController extends Controller
     {
         try{
             $category = Category::find($id);
-            (!$category->status) ? $category->status = true : $category->status = false;
+            ($category->active) ? $category->active = false : $category->active = true;
             if($category->save()){
                 return response()->json(["data" => $category], 200);
             }
