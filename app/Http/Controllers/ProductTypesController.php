@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\ProductType;
+use Illuminate\Database\QueryException;
 
 class ProductTypesController extends Controller
 {
@@ -27,7 +28,9 @@ class ProductTypesController extends Controller
             $product_types = ProductType::whereRaw("LOWER(name) LIKE LOWER(?)", ["%{$name}%"])
                 ->orderBy('name')
                 ->get();
-            // Retornar los resultados en formato JSON
+            $product_types = $product_types->map(function ($pt) {
+                return $this->reduce_data($pt);
+            });
             return response()->json(['data' => $product_types]);
         }
         return response()->json(['error' => "No se encontró ningún registro"], 400);
@@ -71,9 +74,15 @@ class ProductTypesController extends Controller
      */
     public function destroy(string $id)
     {
-        $product_type =  $this->product_type($id);
-        $product_type->delete();
-        return response()->json(["data" => "Categoria eliminada"], 200);
+        try{
+            $product_type = ProductType::find($id);
+            ($product_type->active) ? $product_type->active = false : $product_type->active = true;
+            if($product_type->save()){
+                return response()->json(["data" => $product_type], 200);
+            }
+        }catch(QueryException $e){
+            return response()->json(["error"=> $e], 500);
+        }
     }
 
     private function set_product_type(string $id){
@@ -86,7 +95,9 @@ class ProductTypesController extends Controller
             "id" => $pt->id,
             "name" => $pt->name,
             "category" => $pt->category->name,
-            "active" => $pt->active
+            "active" => $pt->active,
+            "created_at" => $pt->created_at,
+            "updated_at" => $pt->updated_at
         ];
         return $data;
     }

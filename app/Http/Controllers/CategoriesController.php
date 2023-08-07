@@ -57,7 +57,7 @@ class CategoriesController extends Controller
     {
         try{
             $category = Category::find($id);
-            (!$category->status) ? $category->status = true : $category->status = false;
+            ($category->active) ? $category->active = false : $category->active = true;
             if($category->save()){
                 return response()->json(["data" => $category], 200);
             }

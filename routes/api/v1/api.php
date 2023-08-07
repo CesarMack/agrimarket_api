@@ -31,19 +31,19 @@ Route::middleware(['auth:api', 'App\Http\Middleware\CheckAdmin'])->group(functio
             Route::post('/', 'App\Http\Controllers\CategoriesController@store');
             Route::get('/{id}', 'App\Http\Controllers\CategoriesController@show');
             Route::post('/{id}', 'App\Http\Controllers\CategoriesController@update');
-            //Route::post('/{id}/active', 'App\Http\Controllers\CategoriesController@destroy');
+            Route::post('/{id}/active', 'App\Http\Controllers\CategoriesController@destroy');
         });
         Route::prefix('/units_of_measurements')->group(function(){
             Route::post('/', 'App\Http\Controllers\UnitOfMeasurementsController@store');
             Route::get('/{id}', 'App\Http\Controllers\UnitOfMeasurementsController@show');
             Route::post('/{id}', 'App\Http\Controllers\UnitOfMeasurementsController@update');
-            //Route::post('/{id}/active', 'App\Http\Controllers\UnitOfMeasurementsController@destroy');
+            Route::post('/{id}/active', 'App\Http\Controllers\UnitOfMeasurementsController@destroy');
         });
         Route::prefix('/product_types')->group(function(){
             Route::post('/', 'App\Http\Controllers\ProductTypesController@store');
             Route::get('/{id}', 'App\Http\Controllers\ProductTypesController@show');
             Route::post('/{id}', 'App\Http\Controllers\ProductTypesController@update');
-            //Route::delete('/{id}', 'App\Http\Controllers\ProductTypesController@destroy');
+            Route::post('/{id}/active', 'App\Http\Controllers\ProductTypesController@destroy');
         });
     });
 });

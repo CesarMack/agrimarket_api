@@ -57,7 +57,7 @@ class UnitOfMeasurementsController extends Controller
     {
         try{
             $unit = UnitOfMeasurement::find($id);
-            (!$unit->status) ? $unit->status = true : $unit->status = false;
+            ($unit->active) ? $unit->active = false : $unit->active = true;
             if($unit->save()){
                 return response()->json(["data" => $unit], 200);
             }
