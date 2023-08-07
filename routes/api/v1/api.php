@@ -18,6 +18,9 @@ Route::prefix('/user')->group(function(){
     Route::post('/login', 'App\Http\Controllers\AuthenticationController@login');
     Route::post('/register', 'App\Http\Controllers\AuthenticationController@register');
 });
+
+
+
 Route::middleware('auth:api')->group(function () {
     Route::prefix('/users')->group(function(){
         Route::get('/', 'App\Http\Controllers\UsersController@index');
@@ -69,4 +72,15 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/{id}', 'App\Http\Controllers\ProductsController@update');
         Route::delete('/{id}', 'App\Http\Controllers\ProductsController@destroy');
     });
+    
+    Route::prefix('/backups')->group(function(){
+        Route::post('/makeFullBackup', 'App\Http\Controllers\BackupsController@backupFullDatabase');
+        Route::post('/restoreFullBackup', 'App\Http\Controllers\BackupsController@restoreFullDatabase');
+        Route::post('/makeDifferentialBackup', 'App\Http\Controllers\BackupsController@backupDifferentialDatabase');
+        Route::post('/restoreDifferentialBackup/{id}', 'App\Http\Controllers\BackupsController@restoreDifferentialDatabase');
+        Route::post('/deleteDifferentialBackup/{id}', 'App\Http\Controllers\BackupsController@deleteDifferentialDatabase');
+        Route::get('/DifferentialBackup', 'App\Http\Controllers\BackupsController@getBackups');
+    });
+    
+    
 });
