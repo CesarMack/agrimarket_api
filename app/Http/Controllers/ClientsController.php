@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
 use App\Models\User;
+use Illuminate\Http\File;
+use Symfony\Component\Console\Input\Input;
 
 class ClientsController extends Controller
 {
@@ -57,13 +59,24 @@ class ClientsController extends Controller
         $user = User::find($user->id);
         $user->update($data);
         $u_data = UserData::where("user_id", $user->user);
-        if(!$u_data){
+        if(!$u_data->isEmpty()){
             $u_data->update($data);
+            if($data["photo"]){
+                return response()->json(["data"=>$data["photo"]]);
+                $url = $this->store_photo($data["photo"]);
+                $u_data->photo = $url;
+                $u_data->save();
+            }
             $u_data = $this->set_data($user, $u_data);
             return response()->json(["data"=>$u_data]);
         }
         if($data["phone"] && $data["street"]){
             $u_data = new UserData($data);
+            if($data["photo"]){
+                //return response()->json(["data"=>$_FILES["photo"]]);
+                $url = $this->store_photo($_FILES["photo"]);
+                $u_data->photo = $url;
+            }
             $u_data->user_id = $user->id;
             $u_data->save();
             $u_data = $this->set_data($user, $u_data);
@@ -114,6 +127,12 @@ class ClientsController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    private function store_photo(File $photo){
+        $response = cloudinary()->upload($photo->getRealPath())->getSecurePath();
+        $url = dd($response);
+        return $url;
     }
 
     private function set_data(object $user, object $user_data){

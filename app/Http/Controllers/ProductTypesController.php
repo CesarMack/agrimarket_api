@@ -14,7 +14,23 @@ class ProductTypesController extends Controller
     public function index()
     {
         $product_types = ProductType::all();
+        $product_types = $product_types->map(function ($pt) {
+            return $this->reduce_data($pt);
+        });
         return response()->json(["data" => $product_types], 200);
+    }
+
+    public function find_product_type(Request $request)
+    {
+        if ($request->has('name')) {
+            $name = $request->input('name');
+            $product_types = ProductType::whereRaw("LOWER(name) LIKE LOWER(?)", ["%{$name}%"])
+                ->orderBy('name')
+                ->get();
+            // Retornar los resultados en formato JSON
+            return response()->json(['data' => $product_types]);
+        }
+        return response()->json(['error' => "No se encontró ningún registro"], 400);
     }
 
     /**
@@ -63,5 +79,15 @@ class ProductTypesController extends Controller
     private function set_product_type(string $id){
         $product_type = ProductType::findOrFail($id);
         return $product_type;
+    }
+
+    private function reduce_data(object $pt){
+        $data = [
+            "id" => $pt->id,
+            "name" => $pt->name,
+            "category" => $pt->category->name,
+            "active" => $pt->active
+        ];
+        return $data;
     }
 }

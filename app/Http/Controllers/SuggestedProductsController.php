@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SuggestedProduct;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 class SuggestedProductsController extends Controller
 {
@@ -52,6 +53,18 @@ class SuggestedProductsController extends Controller
         return response()->json(["data" => $suggested_product], 200);
     }
 
+    public function update_status(string $id){
+        try{
+            $product = SuggestedProduct::find($id);
+            (!$product->finished) ? $product->finished = true : $product->finished = false;
+            if($product->save()){
+                return response()->json(["data" => $product], 200);
+            }
+        }catch(QueryException $e){
+            return response()->json(["error"=> $e], 500);
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -60,16 +73,6 @@ class SuggestedProductsController extends Controller
         $suggested_product =  $this->set_suggested_product($id);
         $suggested_product->delete();
         return response()->json(["data" => "Sugerencia eliminada"], 200);
-    }
-
-    public function update_status(string $id)
-    {
-        $suggested_product =  $this->set_suggested_product($id);
-        if (!$suggested_product->finished ){
-            $suggested_product->finished = 1;
-            $suggested_product->save();
-            return response()->json(["data" => "Sugerencia actualizada"], 200);
-        }
     }
 
     private function set_suggested_product(string $id){
