@@ -9,9 +9,6 @@ use Illuminate\Database\QueryException;
 
 class SuggestedProductsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $user = Auth::guard('api')->user();
@@ -28,9 +25,6 @@ class SuggestedProductsController extends Controller
         return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $data = $request->all();
@@ -44,18 +38,16 @@ class SuggestedProductsController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $suggested_product = $this->set_suggested_product($id);
-        return response()->json(["data" => $suggested_product], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('admin') || $user->hasRole('farmer')){
+            $suggested_product = $this->set_suggested_product($id);
+            return response()->json(["data" => $suggested_product], 200);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $suggested_product = $this->set_suggested_product($id);
@@ -75,9 +67,6 @@ class SuggestedProductsController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $suggested_product =  $this->set_suggested_product($id);

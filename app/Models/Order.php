@@ -25,4 +25,24 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function unit_of_measurement()
+    {
+        return $this->belongsTo(UnitOfMeasurement::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /*protected static function boot()
+    {
+        parent::boot();
+        static::saving(function ($model) {
+            if ($model->cantidad <= 0) {
+                $model->active = false;
+            }
+        });
+    }*/
 }

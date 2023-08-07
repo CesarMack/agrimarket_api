@@ -19,6 +19,9 @@ class ProductTypesController extends Controller
         if($user->hasRole('admin')){
             $product_types = ProductType::orderBy('created_at', 'desc')
                             ->get();
+            $product_types = $product_types->map(function ($pt) {
+                return $this->reduce_data($pt);
+            });
             return response()->json(["data"=>$product_types]);
         }elseif($user->hasRole('farmer')){
             $product_types = ProductType::where('active', true)

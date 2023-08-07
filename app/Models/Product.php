@@ -23,16 +23,6 @@ class Product extends Model
         'active'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-        static::saving(function ($model) {
-            if ($model->cantidad <= 0) {
-                $model->active = false;
-            }
-        });
-    }
-
     public function unit_of_measurement()
     {
         return $this->belongsTo(UnitOfMeasurement::class);
@@ -51,5 +41,8 @@ class Product extends Model
     public function photos()
     {
         return $this->hasMany(Photo::class);
+    }
+    public function user(){
+        return $this->belongsTo(User::class);
     }
 }

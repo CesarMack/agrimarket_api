@@ -18,7 +18,6 @@ class OrdersController extends Controller
         $user = Auth::guard('api')->user();
         if($user->hasRole('farmer')){
             $orders = Order::where('farmer_id', $user->id)
-                            ->where('active', true)
                             ->orderBy('created_at', 'desc')
                             ->get();
             return response()->json(["data"=>$orders]);
@@ -29,7 +28,7 @@ class OrdersController extends Controller
                             ->get();
             return response()->json(["data"=>$orders]);
         }
-        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);;
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
     /**
@@ -37,8 +36,12 @@ class OrdersController extends Controller
      */
     public function show(string $id)
     {
-        $order = $this->set_order($id);
-        return response()->json(["data" => $order], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('farmer') || $user->hasRole('client')){
+            $order = $this->set_order($id);
+            return response()->json(["data" => $order], 200);;
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
     public function store(Request $request){
@@ -48,6 +51,9 @@ class OrdersController extends Controller
         $product = Product::find($data["product_id"]);
         $order->client_id = $user->id;
         $order->farmer_id = $product->user_id;
+        $order->unit_of_measurement_id = $product->unit_of_measurement->id;
+        $order->status = "Pendiente";
+        $order->total = ($data["quantity"] * $product->price_per_measure);
         if($order->save()){
             return response()->json(["data" => $order], 200);
         }else{
@@ -65,32 +71,57 @@ class OrdersController extends Controller
         return response()->json(["data" => $order], 200);
     }
 
-    public function update_order_status(Request $request, string $id){
-        try{
-            $data = $request->all();
-            $order = Order::find($id);
-            if ($order){
+    public function update_status(Request $request, string $id){
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('farmer') || $user->hasRole('client')){
+            try{
+                $data = $request->all();
+                $order = Order::find($id);
+                $product = $order->product;
                 $order->status = $data["status"];
                 if($order->save()){
+                    if($order->status == "Completado"){
+                        $product->stock = (($product->stock) - ($order->quantity));
+                        $product->save();
+                    }
+                    $order = $this->reduce_data($order);
                     return response()->json(["data" => $order], 200);
                 }
-            }else{
-                return response()->json(["error"=>"Ninguna orden fue encontrada con ese ID"], 400);
+            }catch(QueryException $e){
+                return response()->json(["error"=> $e], 500);
+            }
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
+    }
+
+    public function destroy(string $id)
+    {
+        try{
+            $order = Order::find($id);
+            ($order->active) ? $order->active = false : $order->active = true;
+            if($order->save()){
+                return response()->json(["data" => $order], 200);
             }
         }catch(QueryException $e){
             return response()->json(["error"=> $e], 500);
         }
     }
 
-    public function destroy(string $id)
-    {
-        $order = $this->set_order($id);
-        $order->delete();
-        return response()->json(["data" => "Orden eliminada"], 200);
-    }
-
     private function set_order(string $id){
         $order = Order::findOrFail($id);
         return $order;
+    }
+
+    private function reduce_data(object $order){
+        $data = [
+            "id" => $order->id,
+            "product_id" => $order->product_id,
+            "quantity" => $order->quantity." ".$order->unit_of_measurement->code,
+            "total" => $order->total,
+            "status" => $order->status,
+            "created_at" => $order->created_at,
+            "updated_at" => $order->updated_at
+        ];
+        return $data;
     }
 }
