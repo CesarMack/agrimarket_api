@@ -20,6 +20,19 @@ class ProductTypesController extends Controller
         return response()->json(["data" => $product_types], 200);
     }
 
+    public function find_product_type(Request $request)
+    {
+        if ($request->has('name')) {
+            $name = $request->input('name');
+            $product_types = ProductType::whereRaw("LOWER(name) LIKE LOWER(?)", ["%{$name}%"])
+                ->orderBy('name')
+                ->get();
+            // Retornar los resultados en formato JSON
+            return response()->json(['data' => $product_types]);
+        }
+        return response()->json(['error' => "No se encontró ningún registro"], 400);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
