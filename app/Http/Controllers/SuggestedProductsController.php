@@ -14,8 +14,18 @@ class SuggestedProductsController extends Controller
      */
     public function index()
     {
-        $suggested_products = SuggestedProduct::all();
-        return response()->json(["data" => $suggested_products], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('admin')){
+            $suggested_products = SuggestedProduct::orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$suggested_products]);
+        }elseif($user->hasRole('farmer')){
+            $suggested_products = SuggestedProduct::where('user_id', $user->id)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$suggested_products]);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
     /**

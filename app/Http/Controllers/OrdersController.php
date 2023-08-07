@@ -18,23 +18,18 @@ class OrdersController extends Controller
         $user = Auth::guard('api')->user();
         if($user->hasRole('farmer')){
             $orders = Order::where('farmer_id', $user->id)
+                            ->where('active', true)
                             ->orderBy('created_at', 'desc')
                             ->get();
             return response()->json(["data"=>$orders]);
         }elseif($user->hasRole('client')){
             $orders = Order::where('client_id', $user->id)
+                            ->where('active', true)
                             ->orderBy('created_at', 'desc')
                             ->get();
             return response()->json(["data"=>$orders]);
         }
-    }
-
-    public function orders(){
-        $user = Auth::guard('api')->user();
-        $orders = Order::where('farmer_id', $user->id)
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-        return response()->json(["data"=>$orders]);
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);;
     }
 
     /**

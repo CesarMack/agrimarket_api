@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UnitOfMeasurement;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 
 class UnitOfMeasurementsController extends Controller
 {
@@ -13,8 +14,18 @@ class UnitOfMeasurementsController extends Controller
      */
     public function index()
     {
-        $unit = UnitOfMeasurement::all();
-        return response()->json(["data" => $unit], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('admin')){
+            $unit = UnitOfMeasurement::orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$unit]);
+        }elseif($user->hasRole('farmer')){
+            $unit = UnitOfMeasurement::where('active', true)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            return response()->json(["data"=>$unit]);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
     /**

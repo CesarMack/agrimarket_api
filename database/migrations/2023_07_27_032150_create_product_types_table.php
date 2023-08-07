@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->uuid('category_id');
             $table->foreign('category_id')->references('id')->on('categories');
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }
