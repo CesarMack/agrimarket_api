@@ -156,7 +156,9 @@ class UsersController extends Controller
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
             'email' => $user->email,
-            "role"=> $user->getRoleNames()->first()
+            "role"=> $user->getRoleNames()->first(),
+            "created_at" => $user->created_at,
+            "updated_at" => $user->updated_at
         ];
         return $data;
     }
