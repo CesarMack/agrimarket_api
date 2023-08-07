@@ -25,4 +25,14 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    /*protected static function boot()
+    {
+        parent::boot();
+        static::saving(function ($model) {
+            if ($model->cantidad <= 0) {
+                $model->active = false;
+            }
+        });
+    }*/
 }

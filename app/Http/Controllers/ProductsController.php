@@ -13,13 +13,27 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
-        return response()->json(["data" => $products], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('farmer')){
+            $products = Product::where('user_id', $user->id)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            $products = $products->map(function ($pt) {
+                return $this->reduce_data($pt);
+            });
+            return response()->json(["data"=>$products]);
+        }elseif($user->hasRole('client')){
+            $products = Product::where('active', true)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+            $products = $products->map(function ($pt) {
+                return $this->reduce_data($pt);
+            });
+            return response()->json(["data"=>$products]);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);;
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $product = $this->set_product($id);
@@ -31,6 +45,7 @@ class ProductsController extends Controller
         $user = Auth::guard('api')->user();
         $product = new Product($data);
         $product->user_id = $user->id;
+        $product->active = true;
         if($product->save()){
             return response()->json(["data" => $product], 200);
         }else{
@@ -61,5 +76,19 @@ class ProductsController extends Controller
     private function set_product(string $id){
         $product = Product::findOrFail($id);
         return $product;
+    }
+
+    private function reduce_data(object $pt){
+        $data = [
+            "id" => $pt->id,
+            "user" => $pt->user->first_name." ".$pt->user->last_name,
+            "price" => $pt->price,
+            "measure" => $pt->unit_of_measurement->name,
+            "minimum_sale" => $pt->minimum_sale,
+            "cutoff_date" => $pt->cutoff_date,
+            "created_at" => $pt->created_at,
+            "updated_at" => $pt->updated_at
+        ];
+        return $data;
     }
 }
