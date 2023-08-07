@@ -40,8 +40,12 @@ class SuggestedProductsController extends Controller
 
     public function show(string $id)
     {
-        $suggested_product = $this->set_suggested_product($id);
-        return response()->json(["data" => $suggested_product], 200);
+        $user = Auth::guard('api')->user();
+        if($user->hasRole('admin') || $user->hasRole('farmer')){
+            $suggested_product = $this->set_suggested_product($id);
+            return response()->json(["data" => $suggested_product], 200);
+        }
+        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
     public function update(Request $request, string $id)

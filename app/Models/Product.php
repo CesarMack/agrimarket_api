@@ -42,4 +42,7 @@ class Product extends Model
     {
         return $this->hasMany(Photo::class);
     }
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

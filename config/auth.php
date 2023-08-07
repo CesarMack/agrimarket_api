@@ -103,6 +103,11 @@ return [
         ],
     ],
 
+    'passport' => [
+        'tokensExpireIn' => '1 day',
+    ],
+
+
     /*
     |--------------------------------------------------------------------------
     | Password Confirmation Timeout

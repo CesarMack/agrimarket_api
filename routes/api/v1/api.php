@@ -26,7 +26,7 @@ Route::middleware(['auth:api', 'App\Http\Middleware\CheckAdmin'])->group(functio
         Route::post('/register', 'App\Http\Controllers\AdminsController@register');
         Route::post('/find_product_type', 'App\Http\Controllers\ProductTypesController@find_product_type');
         Route::post('/find_category', 'App\Http\Controllers\CategoriesController@find_category');
-        Route::post('/{id}/update_status', 'App\Http\Controllers\SuggestedProductsController@update_status');
+        Route::post('suggestions/{id}/update_status', 'App\Http\Controllers\SuggestedProductsController@update_status');
         Route::post('/suggestions/{id}', 'App\Http\Controllers\SuggestedProductsController@update_status');
         Route::prefix('/categories')->group(function(){
             Route::post('/', 'App\Http\Controllers\CategoriesController@store');
@@ -53,7 +53,6 @@ Route::middleware(['auth:api', 'App\Http\Middleware\CheckFarmer'])->group(functi
         Route::get('/dashboard', 'App\Http\Controllers\FarmersController@dashboard');
         Route::get('/top_sales', 'App\Http\Controllers\FarmersController@top_sales');
         Route::get('/last_orders', 'App\Http\Controllers\FarmersController@last_orders');
-        Route::post('/update_order_status/{id}', 'App\Http\Controllers\OrdersController@update_order_status');
         Route::prefix('/estates')->group(function(){
             Route::get('/', 'App\Http\Controllers\EstatesController@index');
             Route::post('/', 'App\Http\Controllers\EstatesController@store');
@@ -68,20 +67,19 @@ Route::middleware(['auth:api', 'App\Http\Middleware\CheckFarmer'])->group(functi
         Route::prefix('/products')->group(function(){
             Route::post('/', 'App\Http\Controllers\ProductsController@store');
             Route::post('/{id}', 'App\Http\Controllers\ProductsController@update');
-            Route::post('/{id}/active', 'App\Http\Controllers\EstatesController@destroy');
+            Route::post('/{id}/active', 'App\Http\Controllers\ProductsController@destroy');
+            Route::post('/{id}/photos', 'App\Http\Controllers\PhotosController@store');
+            Route::delete('/{id}/photos', 'App\Http\Controllers\PhotosController@destroy');
         });
     });
 });
 Route::middleware(['auth:api', 'App\Http\Middleware\CheckClient'])->group(function () {
     Route::prefix('/clients')->group(function(){
-        Route::get('/me', 'App\Http\Controllers\ClientsController@me');
         Route::get('/dashboard', 'App\Http\Controllers\ClientsController@dashboard');
-        Route::post('/update_order_status/{id}', 'App\Http\Controllers\ClientsController@update_order_status');
-        Route::post('/me/update', 'App\Http\Controllers\ClientsController@update_me');
         Route::prefix('/orders')->group(function(){
             Route::post('/', 'App\Http\Controllers\OrdersController@store');
             Route::post('/{id}', 'App\Http\Controllers\OrdersController@update');
-            Route::delete('/{id}', 'App\Http\Controllers\OrdersController@destroy');
+            Route::post('/{id}/active', 'App\Http\Controllers\OrdersController@destroy');
         });
     });
 });
@@ -90,7 +88,6 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/me', 'App\Http\Controllers\UsersController@me');
         Route::post('/me/update', 'App\Http\Controllers\UsersController@update_me');
         Route::get('/{id}', 'App\Http\Controllers\UsersController@show');
-        Route::delete('/{id}', 'App\Http\Controllers\UsersController@destroy');
     });
     Route::prefix('/categories')->group(function(){
         Route::get('/', 'App\Http\Controllers\CategoriesController@index');
@@ -104,6 +101,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('/orders')->group(function(){
         Route::get('/', 'App\Http\Controllers\OrdersController@index');
         Route::get('/{id}', 'App\Http\Controllers\OrdersController@show');
+        Route::post('/update_order_status/{id}', 'App\Http\Controllers\OrdersController@update_status');
     });
     Route::prefix('/estates')->group(function(){
         Route::get('/{id}', 'App\Http\Controllers\EstatesController@show');
@@ -115,12 +113,5 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('/products')->group(function(){
         Route::get('/', 'App\Http\Controllers\ProductsController@index');
         Route::get('/{id}', 'App\Http\Controllers\ProductsController@show');
-    });
-    Route::prefix('/photos')->group(function(){
-        Route::get('/', 'App\Http\Controllers\PhotosController@index');
-        Route::post('/', 'App\Http\Controllers\PhotosController@store');
-        Route::get('/{id}', 'App\Http\Controllers\PhotosController@show');
-        Route::post('/{id}', 'App\Http\Controllers\PhotosController@update');
-        Route::delete('/{id}', 'App\Http\Controllers\PhotosController@destroy');
     });
 });

@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CategoriesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $user = Auth::guard('api')->user();
@@ -35,7 +32,6 @@ class CategoriesController extends Controller
             $categories = Category::whereRaw("LOWER(name) LIKE LOWER(?)", ["%{$name}%"])
                 ->orderBy('name')
                 ->get();
-            // Retornar los resultados en formato JSON
             return response()->json(['data' => $categories]);
         }
         return response()->json(['error' => "No se encontró un nombre, apellido o e-mail"], 400);
@@ -52,18 +48,12 @@ class CategoriesController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $category =  $this->set_category($id);
         return response()->json(["data" => $category], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $category =  $this->set_category($id);
@@ -71,9 +61,6 @@ class CategoriesController extends Controller
         return response()->json(["data" => $category], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try{

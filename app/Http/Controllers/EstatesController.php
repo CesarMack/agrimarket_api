@@ -28,6 +28,10 @@ class EstatesController extends Controller
         $userid = Auth::guard('api')->user()->id;
         $estate = new Estate($data);
         $estate->user_id = $userid;
+        if ($request->file('photo')){
+            $url = $this->upload_photo($request);
+            $estate->photo = $url->original["url"];
+        }
         if($estate->save()){
             return response()->json(["data" => $estate], 200);
         }else{
@@ -35,22 +39,24 @@ class EstatesController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $estate = $this->set_estate($id);
         return response()->json(["data" => $estate], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $estate = $this->set_estate($id);
+        $url = $estate->photo;
         $estate->update($request->all());
+        $estate->photo = $url;
+        $estate->save();
+        if ($request->file('photo')){
+            $url = $this->upload_photo($request);
+            $estate->photo = $url->original["url"];
+            $estate->save();
+        }
         return response()->json(["data" => $estate], 200);
     }
 
@@ -73,5 +79,10 @@ class EstatesController extends Controller
     private function set_estate(string $id){
         $estate = Estate::findOrFail($id);
         return $estate;
+    }
+
+    private function upload_photo(Request $request){
+        $response = cloudinary()->upload($request->file('photo')->getRealPath())->getSecurePath();
+        return response()->json(['url' => $response]);
     }
 }

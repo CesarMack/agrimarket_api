@@ -58,18 +58,31 @@ class UsersController extends Controller
         $user = Auth::guard('api')->user();
         $user = User::find($user->id);
         $user->update($data);
-        $u_data = UserData::where("user_id", $user->user)->first();
+        $u_data = UserData::where("user_id", $user->id)->first();
         if($u_data){
+            $url = $u_data->photo;
             $u_data->update($data);
-            $u_data = $this->set_data($user, $u_data);
-            return response()->json(["data"=>$u_data]);
-        }
-        if($data["phone"] && $data["street"]){
-            $u_data = new UserData($data);
-            $u_data->user_id = $user->id;
+            $u_data->photo = $url;
             $u_data->save();
+            if ($request->file('photo')){
+                $url = $this->upload_photo($request);
+                $u_data->photo = $url->original["url"];
+                $u_data->save();
+            }
             $u_data = $this->set_complete_data($user, $u_data);
             return response()->json(["data"=>$u_data]);
+        }else{
+            if(isset($data["phone"]) && isset($data["street"])){
+                $u_data = new UserData($data);
+                if ($request->file('photo')){
+                    $url = $this->upload_photo($request);
+                    $u_data->photo = $url->original["url"];
+                }
+                $u_data->user_id = $user->id;
+                $u_data->save();
+                $u_data = $this->set_complete_data($user, $u_data);
+                return response()->json(["data"=>$u_data]);
+            }
         }
         return response()->json(["data"=>[
             "id" => $user->id,
@@ -92,28 +105,6 @@ class UsersController extends Controller
         return response()->json(['error' => "No se encontró un nombre, apellido o e-mail"], 400);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $user = $this->set_user($id);
-        $user_data = UserData::where('user_id', $user->id)->first();
-        $user->update($request->all());
-        $user_data->update($request->all());
-        if ($request->file('photo')){
-            $file = $request->file('photo');
-            $file->storeAs('',$user->id.".".$file->extension(), 'public');
-            //$user_data->photo = $url;
-            //$user_data->save();
-        }
-        $data = $this->set_data($user, $user_data);
-        return response()->json(["data" => $data], 200);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $user = $this->set_user($id);
@@ -168,5 +159,10 @@ class UsersController extends Controller
             "role"=> $user->getRoleNames()->first()
         ];
         return $data;
+    }
+
+    private function upload_photo(Request $request){
+        $response = cloudinary()->upload($request->file('photo')->getRealPath())->getSecurePath();
+        return response()->json(['url' => $response]);
     }
 }
