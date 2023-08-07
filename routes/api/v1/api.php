@@ -49,14 +49,12 @@ Route::middleware(['auth:api', 'App\Http\Middleware\CheckAdmin'])->group(functio
 });
 Route::middleware(['auth:api', 'App\Http\Middleware\CheckFarmer'])->group(function () {
     Route::prefix('/farmers')->group(function(){
-        Route::get('/me', 'App\Http\Controllers\FarmersController@me');
         Route::get('/dashboard', 'App\Http\Controllers\FarmersController@dashboard');
         Route::get('/top_sales', 'App\Http\Controllers\FarmersController@top_sales');
         Route::get('/last_orders', 'App\Http\Controllers\FarmersController@last_orders');
-        Route::get('/orders', 'App\Http\Controllers\FarmersController@orders');
-        Route::post('/update_order_status/{id}', 'App\Http\Controllers\FarmersController@update_order_status');
-        Route::post('/orders/{id}', 'App\Http\Controllers\FarmersController@update_order_status');
-        Route::post('/me/update', 'App\Http\Controllers\FarmersController@update_me');
+        Route::get('/orders', 'App\Http\Controllers\FarmersController@index');
+        Route::post('/update_order_status/{id}', 'App\Http\Controllers\OrdersController@update_order_status');
+        //Route::post('/orders/{id}', 'App\Http\Controllers\FarmersController@update_order_status');
     });
 });
 Route::middleware(['auth:api', 'App\Http\Middleware\CheckClient'])->group(function () {
