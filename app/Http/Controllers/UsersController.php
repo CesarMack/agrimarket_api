@@ -39,9 +39,9 @@ class UsersController extends Controller
 
     public function me(){
         $user = Auth::guard('api')->user();
-        $u_data = UserData::where("user_id", $user->user);
-        if(!$u_data){
-            $data = $this->set_data($user, $u_data);
+        $u_data = UserData::where("user_id", $user->id)->first();
+        if($u_data){
+            $data = $this->set_complete_data($user, $u_data);
             return response()->json(["data"=>$data]);
         }
         return response()->json(["data"=>[
@@ -59,6 +59,7 @@ class UsersController extends Controller
         $user = User::find($user->id);
         $user->update($data);
         $u_data = UserData::where("user_id", $user->id)->first();
+        return response()->json(["data"=>"uwu"]);
         if($u_data){
             $url = $u_data->photo;
             $u_data->update($data);
