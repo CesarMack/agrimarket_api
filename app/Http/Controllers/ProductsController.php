@@ -41,7 +41,7 @@ class ProductsController extends Controller
         $user = Auth::guard('api')->user();
         if($user->hasRole('farmer') || $user->hasRole('client')){
             $product = $this->set_product($id);
-            return response()->json(["data" => $product], 200);
+            return response()->json(["data" => $this->set_complete_data($product)], 200);
         }
         return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
@@ -91,8 +91,30 @@ class ProductsController extends Controller
         $data = [
             "id" => $pt->id,
             "user_id" => $pt->user->first_name." ".$pt->user->last_name,
+            "product" => $pt->product_type->name,
             "price" => $pt->price_per_measure,
             "measure" => $pt->unit_of_measurement->name,
+            "minimum_sale" => $pt->minimum_sale,
+            "cutoff_date" => $pt->cutoff_date,
+            "photos" => $photos,
+            "created_at" => $pt->created_at,
+            "updated_at" => $pt->updated_at
+        ];
+        return $data;
+    }
+    private function set_complete_data(object $pt){
+        $photos = Photo::where("product_id", $pt->id)->get();
+        $photos = $photos->map(function ($pt) {
+            return ["photo" => $pt->photo];
+        });
+        $data = [
+            "id" => $pt->id,
+            "user_id" => $pt->user->first_name." ".$pt->user->last_name,
+            "product" => $pt->product_type->name,
+            "description" => $pt->description,
+            "price" => $pt->price_per_measure,
+            "measure" => $pt->unit_of_measurement->name,
+            "stock" => $pt->stock,
             "minimum_sale" => $pt->minimum_sale,
             "cutoff_date" => $pt->cutoff_date,
             "photos" => $photos,
