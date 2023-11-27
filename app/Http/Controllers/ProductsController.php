@@ -86,7 +86,10 @@ class ProductsController extends Controller
     private function reduce_data(object $pt){
         $photos = Photo::where("product_id", $pt->id)->get();
         $photos = $photos->map(function ($pt) {
-            return ["photo" => $pt->photo];
+            return [
+                "id" => $pt->id,
+                "url" => $pt->photo
+            ];
         });
         $data = [
             "id" => $pt->id,
@@ -105,7 +108,10 @@ class ProductsController extends Controller
     private function set_complete_data(object $pt){
         $photos = Photo::where("product_id", $pt->id)->get();
         $photos = $photos->map(function ($pt) {
-            return ["photo" => $pt->photo];
+            return [
+                "id" => $pt->id,
+                "url" => $pt->photo
+            ];
         });
         $data = [
             "id" => $pt->id,
