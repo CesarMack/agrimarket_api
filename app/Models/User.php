@@ -60,7 +60,7 @@ class User extends Authenticatable
 
     public function estates()
     {
-        return $this->hasMany(Estate::class);
+        return $this->hasOne(Estate::class);
     }
     public function suggested_products()
     {

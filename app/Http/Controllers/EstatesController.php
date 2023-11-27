@@ -16,7 +16,7 @@ class EstatesController extends Controller
                         ->where('active', true)
                         ->orderBy('created_at', 'desc')
                         ->get();
-        return response()->json(["data"=>$estates]);
+        return response()->json(["data"=>$estates->first()]);
     }
 
     /**
@@ -24,18 +24,26 @@ class EstatesController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
-        $userid = Auth::guard('api')->user()->id;
-        $estate = new Estate($data);
-        $estate->user_id = $userid;
-        if ($request->file('photo')){
-            $url = $this->upload_photo($request);
-            $estate->photo = $url->original["url"];
-        }
-        if($estate->save()){
-            return response()->json(["data" => $estate], 200);
+        $user = Auth::guard('api')->user();
+        $estates = Estate::where('user_id', $user->id)
+                        ->where('active', true)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+        if (count($estates) < 1){
+            $data = $request->all();
+            $estate = new Estate($data);
+            $estate->user_id = $user->id;
+            if ($request->file('photo')){
+                $url = $this->upload_photo($request);
+                $estate->photo = $url->original["url"];
+            }
+            if($estate->save()){
+                return response()->json(["data" => $estate], 200);
+            }else{
+                return response()->json(["error" => "Ocurrrio un error"], 400);
+            }
         }else{
-            return response()->json(["error" => "Ocurrrio un error"], 400);
+            return response()->json(["error" => "El usuario ya cuenta con una granja registrada"], 400);
         }
     }
 
