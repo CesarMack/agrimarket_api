@@ -59,7 +59,6 @@ class UsersController extends Controller
         $user = User::find($user->id);
         $user->update($data);
         $u_data = UserData::where("user_id", $user->id)->first();
-        return response()->json(["data"=>"uwu"]);
         if($u_data){
             $url = $u_data->photo;
             $u_data->update($data);
