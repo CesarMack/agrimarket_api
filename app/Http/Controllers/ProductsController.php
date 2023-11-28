@@ -113,13 +113,38 @@ class ProductsController extends Controller
                 "url" => $pt->photo
             ];
         });
+        $estate = [];
+        if($pt->user->estates){
+            $estate = [
+                "id" => $pt->user->estates->first()->id,
+                "name" => $pt->user->estates->first()->name,
+                "street" => $pt->user->estates->first()->street,
+                "ext_num" => $pt->user->estates->first()->ext_num,
+                "int_num" => $pt->user->estates->first()->int_num,
+                "suburb" => $pt->user->estates->first()->suburb,
+                "city" => $pt->user->estates->first()->city,
+                "state" => $pt->user->estates->first()->state,
+                "zip_code" => $pt->user->estates->first()->zip_code,
+                "photo" => $pt->user->estates->first()->photo,
+            ];
+        }
         $data = [
             "id" => $pt->id,
-            "user_id" => $pt->user->first_name." ".$pt->user->last_name,
+            "user" => [
+                "id" => $pt->user->id,
+                "name" => $pt->user->first_name." ".$pt->user->last_name,
+                "phone" => $pt->user->user_data->phone,
+                "photo" => $pt->user->user_data->photo
+            ],
+            "estate" => $estate,
             "product" => $pt->product_type->name,
             "description" => $pt->description,
             "price" => $pt->price_per_measure,
-            "measure" => $pt->unit_of_measurement->name,
+            "measure" => [
+                "id" => $pt->unit_of_measurement->id,
+                "name" => $pt->unit_of_measurement->name,
+                "code" => $pt->unit_of_measurement->code,
+            ],
             "stock" => $pt->stock,
             "minimum_sale" => $pt->minimum_sale,
             "cutoff_date" => $pt->cutoff_date,
