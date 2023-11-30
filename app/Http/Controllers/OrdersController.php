@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
+use App\Models\User;
 
 class OrdersController extends Controller
 {
@@ -20,15 +21,24 @@ class OrdersController extends Controller
             $orders = Order::where('farmer_id', $user->id)
                             ->orderBy('created_at', 'desc')
                             ->get();
-            return response()->json(["data"=>$orders]);
+            return response()->json(["data"=>$this->index_complete_data($orders)]);
         }elseif($user->hasRole('client')){
             $orders = Order::where('client_id', $user->id)
                             ->where('active', true)
                             ->orderBy('created_at', 'desc')
                             ->get();
-            return response()->json(["data"=>$orders]);
+            return response()->json(["data"=>$this->index_complete_data($orders)]);
         }
         return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
+    }
+
+    public function index_complete_data($orders){
+        $data = [];
+        foreach ($orders as $order) {
+            $order = $this->complete_data($order);
+            $data[] = $order;
+        }
+        return $data;
     }
 
     /**
@@ -39,7 +49,7 @@ class OrdersController extends Controller
         $user = Auth::guard('api')->user();
         if($user->hasRole('farmer') || $user->hasRole('client')){
             $order = $this->set_order($id);
-            return response()->json(["data" => $order], 200);;
+            return response()->json(["data" => $this->complete_data($order)], 200);;
         }
         return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
@@ -116,6 +126,45 @@ class OrdersController extends Controller
         $data = [
             "id" => $order->id,
             "product_id" => $order->product_id,
+            "quantity" => $order->quantity." ".$order->unit_of_measurement->code,
+            "total" => $order->total,
+            "status" => $order->status,
+            "created_at" => $order->created_at,
+            "updated_at" => $order->updated_at
+        ];
+        return $data;
+    }
+
+    private function complete_data(object $order){
+        $client = User::find($order->client_id);
+        $photo = "";
+        $phone = "";
+
+        if($client->user_data){
+            $photo = $client->user_data->photo;
+            $phone = $client->user_data->phone;
+        }
+
+        $data = [
+            "id" => $order->id,
+            "product" => [
+                "id" => $order->product->id,
+                "name" => $order->product->product_type->name,
+                "cutoff_date" => $order->product->cutoff_date,
+                "description" => $order->product->description
+            ],
+            "client" => [
+                "id" => $order->client_id,
+                "name" => $client->first_name." ".$client->last_name,
+                "phone" => $phone,
+                "photo" => $photo
+            ],
+            "measure" => [
+                "id" => $order->unit_of_measurement->id,
+                "name" => $order->unit_of_measurement->name,
+                "code" => $order->unit_of_measurement->code
+            ],
+            "farmer_id" => $order->farmer_id,
             "quantity" => $order->quantity." ".$order->unit_of_measurement->code,
             "total" => $order->total,
             "status" => $order->status,
