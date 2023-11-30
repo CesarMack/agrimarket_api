@@ -20,19 +20,21 @@ class OrdersController extends Controller
         if($user->hasRole('farmer')){
             $orders = Order::where('farmer_id', $user->id)
                             ->orderBy('created_at', 'desc')
+                            ->take(50)
                             ->get();
-            return response()->json(["data"=>$this->index_complete_data($orders)]);
+            return response()->json(["data"=>$this->index_data($orders)]);
         }elseif($user->hasRole('client')){
             $orders = Order::where('client_id', $user->id)
                             ->where('active', true)
                             ->orderBy('created_at', 'desc')
+                            ->take(50)
                             ->get();
-            return response()->json(["data"=>$this->index_complete_data($orders)]);
+            return response()->json(["data"=>$this->index_data($orders)]);
         }
         return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
     }
 
-    public function index_complete_data($orders){
+    public function index_data($orders){
         $data = [];
         foreach ($orders as $order) {
             $order = $this->complete_data($order);

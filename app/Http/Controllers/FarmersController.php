@@ -32,13 +32,6 @@ class FarmersController extends Controller
         //Productos activos
         $active_products = Product::where("user_id", $user->id)->where("active", true)->get();
 
-        //Ordenes por semana
-        $products = Product::select('products.*', DB::raw('count(orders.id) as order_count'))
-            ->join('orders', 'products.id', '=', 'orders.product_id')
-            ->groupBy('products.id')
-            ->orderByDesc('order_count')
-            ->get();
-
        // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
         $startOfWeek = Carbon::now()->startOfWeek()->subDay();
 
@@ -70,9 +63,8 @@ class FarmersController extends Controller
                 "pending_orders" => $pending_orders->count(),
                 "canceled_orders" => $canceled_orders->count(),
                 "active_products" => $active_products->count(),
-                "products" => $products,
-                "semana" => $ordersByDay,
-                "mes" => $ordersByWeek
+                "orders_last_week" => $ordersByDay,
+                "orders_last_month" => $ordersByWeek
             ]
         ]);
     }
