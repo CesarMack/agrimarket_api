@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SuggestedProduct;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Models\Product;
 
 class AdminsController extends Controller
 {
@@ -39,6 +43,23 @@ class AdminsController extends Controller
     }
 
     public function dashboard(){
+        // Total de usuarios
+        $total_users = User::all();
+
+        // Usuarios nuevos
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+        $new_users = DB::table('users')
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        // Ordenes totales
+        $total_orders = Order::all();
+
+        //Productos activos
+        $active_products = Product::where('active', true)->get();
+
+        /*
         //Total de usuarios, Total de granjeros, Total de Clientes
         $admin = 'admin';
         $admins = User::whereHas('roles', function ($query) use ($admin) {
@@ -52,12 +73,14 @@ class AdminsController extends Controller
         $farmers = User::whereHas('roles', function ($query) use ($farmer) {
             $query->where('name', $farmer);
         })->get();
+        */
+
         return response()->json([
             "data"=>[
-                "admins"=> count($admins),
-                "clients"=>count($clients),
-                "farmers"=>count($farmers),
-                "total"=>count(User::all())
+                "total_users"=> count($total_users),
+                "new_users"=>count($new_users),
+                "total_orders"=>count($total_orders),
+                "active_products"=>count($active_products)
             ]
         ]);
     }
