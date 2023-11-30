@@ -15,25 +15,51 @@ class OrdersController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::guard('api')->user();
-        if($user->hasRole('farmer')){
+        if ($user->hasRole('farmer')) {
             $orders = Order::where('farmer_id', $user->id)
                             ->orderBy('created_at', 'desc')
-                            ->take(50)
-                            ->get();
-            return response()->json(["data"=>$this->index_data($orders)]);
-        }elseif($user->hasRole('client')){
+                            ->take(50);
+
+            if ($request->has('status')) {
+                if ($request->input('status') === 'Completado') {
+                    $orders->where('status', 'Completado');
+                } elseif ($request->input('status') === 'Pendiente') {
+                    $orders->where('status', 'Pendiente');
+                } elseif ($request->input('status') === 'Rechazado') {
+                    $orders->where('status', 'Rechazado');
+                } elseif ($request->input('status') === 'Cancelado') {
+                    $orders->where('status', 'Cancelado');
+                }
+            }
+            $orders = $orders->get();
+            return response()->json(["data" => $this->index_data($orders)]);
+
+        } elseif ($user->hasRole('client')) {
             $orders = Order::where('client_id', $user->id)
                             ->where('active', true)
                             ->orderBy('created_at', 'desc')
-                            ->take(50)
-                            ->get();
-            return response()->json(["data"=>$this->index_data($orders)]);
+                            ->take(50);
+
+            if ($request->has('status')) {
+                if ($request->input('status') === 'Completado') {
+                    $orders->where('status', 'Completado');
+                } elseif ($request->input('status') === 'Pendiente') {
+                    $orders->where('status', 'Pendiente');
+                } elseif ($request->input('status') === 'Rechazado') {
+                    $orders->where('status', 'Rechazado');
+                } elseif ($request->input('status') === 'Cancelado') {
+                    $orders->where('status', 'Cancelado');
+                }
+            }
+            $orders = $orders->get();
+            return response()->json(["data" => $this->index_data($orders)]);
         }
-        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);
+        return response()->json(["error" => "Tu usuario no cuenta con un rol indicado"], 400);
     }
+
 
     public function index_data($orders){
         $data = [];

@@ -27,18 +27,22 @@ class FarmersController extends Controller
 
         return response()->json([
             "data" => [
-                "completed_orders" => $completed_orders->count(),
+                "completed_orders" => [
+                    "week" => $this->orders_last_week($completed_orders),
+                    "month" => $this->orders_last_month($completed_orders),
+                    "six_months" => $this->orders_last_six_months($completed_orders)
+                ],
                 "pending_orders" => $pending_orders->count(),
                 "canceled_orders" => $canceled_orders->count(),
                 "active_products" => $active_products->count(),
-                "orders_last_week" => $this->orders_last_week(),
+                "orders_last_week" => $this->orders_last_week(Order::all()),
                 "orders_last_month" => $this->orders_last_month(),
                 "orders_last_six_months" => $this->orders_last_six_months()
             ]
         ]);
     }
 
-    public function orders_last_week(){
+    public function orders_last_week($orders){
         // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
         $startOfWeek = Carbon::now()->startOfWeek()->subDay();
 
@@ -52,9 +56,12 @@ class FarmersController extends Controller
         $currentIndex = $weekdays->search(Carbon::now()->translatedFormat('l'));
         $weekdays = $weekdays->merge($weekdays->splice(0, $currentIndex));
 
+        $startOfWeek = Carbon::now()->startOfWeek()->subDay(); // Modifica según tus necesidades
+        $endOfWeek = $startOfWeek->copy()->endOfWeek();
+
         // Realiza la consulta para cada día de la semana
         foreach ($weekdays as $day) {
-            $ordersByDay[$day] = Order::whereDate('created_at', $startOfWeek->copy()->toDateString())->count();
+            $ordersByDay[$day] = $orders->whereBetween('created_at', [$startOfWeek, $endOfWeek])->count();
             $startOfWeek->subDay();
         }
 
@@ -75,8 +82,27 @@ class FarmersController extends Controller
         return $ordersByWeek;
     }
 
-    public function orders_last_six_months(){
+    public function orders_last_six_months() {
+        // Obtén la fecha de inicio para el primer día del mes anterior
+        $startOfMonth = Carbon::now()->subMonth()->startOfMonth();
+
+        // Inicializa un array para almacenar los resultados por mes
+        $ordersByMonth = [];
+
+        // Realiza la consulta para cada mes de los últimos 6 meses
+        for ($i = 0; $i < 6; $i++) {
+            $monthName = $startOfMonth->copy()->format('F'); // Nombre del mes
+            $ordersByMonth[$monthName] = Order::whereYear('created_at', $startOfMonth->year)
+                ->whereMonth('created_at', $startOfMonth->month)
+                ->count();
+
+            // Retrocede al primer día del mes anterior
+            $startOfMonth->subMonth();
+        }
+
+        return $ordersByMonth;
     }
+
 
     public function top_sales(){
         $user = Auth::guard('api')->user();
