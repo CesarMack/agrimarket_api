@@ -38,7 +38,7 @@ class OrdersController extends Controller
             return response()->json(["data" => $this->index_data($orders)]);
 
         } elseif ($user->hasRole('client')) {
-            $orders = Order::where('farmer_id', $user->id)
+            $orders = Order::where('client_id', $user->id)
                             ->orderBy('created_at', 'desc')
                             ->take(50);
 
