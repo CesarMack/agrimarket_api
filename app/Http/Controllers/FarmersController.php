@@ -25,6 +25,23 @@ class FarmersController extends Controller
         //Productos activos
         $active_products = Product::where("user_id", $user->id)->where("active", true)->get();
 
+        $last_three_orders = Order::where("farmer_id", $user->id)->orderBy('created_at', 'desc')
+        ->take(3)->get();
+
+
+        $formattedOrders = [];
+
+        foreach ($last_three_orders as $order) {
+            $formattedOrder = [
+                "id" => $order["id"],
+                "name" => $order["product"]["product_type"]["name"],
+                "quantity" => $order["quantity"] . " " . $order["unit_of_measurement"]["code"],
+                "date" => $order["created_at"]
+            ];
+
+            $formattedOrders[] = $formattedOrder;
+        }
+
         return response()->json([
             "data" => [
                 "completed" => $completed_orders->count(),
@@ -46,9 +63,11 @@ class FarmersController extends Controller
                     "month" => array_sum($this->orders_last_month($canceled_orders)),
                     "six_months" => array_sum($this->orders_last_six_months($canceled_orders))
                 ],
-                "orders_last_week" => $this->orders_last_week(Order::all()),
-                "orders_last_month" => $this->orders_last_month(Order::all()),
-                "orders_last_six_months" => $this->orders_last_six_months(Order::all())
+                "orders_last_week" => $this->orders_last_week(Order::where("farmer_id", $user->id)->get()),
+                "orders_last_month" => $this->orders_last_month(Order::where("farmer_id", $user->id)->get()),
+                "orders_three_months" => $this->orders_last_three_months(Order::where("farmer_id", $user->id)->get()),
+                "orders_last_six_months" => $this->orders_last_six_months(Order::where("farmer_id", $user->id)->get()),
+                "last_three_orders" => $formattedOrders
             ]
         ]);
     }
@@ -98,6 +117,23 @@ class FarmersController extends Controller
         $ordersByMonth = [];
 
         for ($i = 0; $i < 6; $i++) {
+            $monthName = $startOfMonth->copy()->format('F');
+            $ordersByMonth[$monthName] = $orders->filter(function ($order) use ($startOfMonth) {
+                return $order->created_at->year == $startOfMonth->year &&
+                       $order->created_at->month == $startOfMonth->month;
+            })->count();
+
+            $startOfMonth->subMonth();
+        }
+
+        return $ordersByMonth;
+    }
+
+    public function orders_last_three_months($orders) {
+        $startOfMonth = Carbon::now()->subMonth()->startOfMonth();
+        $ordersByMonth = [];
+
+        for ($i = 0; $i < 3; $i++) {
             $monthName = $startOfMonth->copy()->format('F');
             $ordersByMonth[$monthName] = $orders->filter(function ($order) use ($startOfMonth) {
                 return $order->created_at->year == $startOfMonth->year &&
