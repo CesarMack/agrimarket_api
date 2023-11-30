@@ -27,6 +27,10 @@ class FarmersController extends Controller
 
         return response()->json([
             "data" => [
+                "completed" => $completed_orders->count(),
+                "pending" => $pending_orders->count(),
+                "canceled" => $canceled_orders->count(),
+                "products" => $active_products->count(),
                 "completed_orders" => [
                     "week" => array_sum($this->orders_last_week($completed_orders)),
                     "month" => array_sum($this->orders_last_month($completed_orders)),
@@ -41,11 +45,6 @@ class FarmersController extends Controller
                     "week" => array_sum($this->orders_last_week($canceled_orders)),
                     "month" => array_sum($this->orders_last_month($canceled_orders)),
                     "six_months" => array_sum($this->orders_last_six_months($canceled_orders))
-                ],
-                "active_products" => [
-                    "week" => array_sum($this->orders_last_week($active_products)),
-                    "month" => array_sum($this->orders_last_month($active_products)),
-                    "six_months" => array_sum($this->orders_last_six_months($active_products))
                 ],
                 "orders_last_week" => $this->orders_last_week(Order::all()),
                 "orders_last_month" => $this->orders_last_month(Order::all()),
