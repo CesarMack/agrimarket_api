@@ -7,34 +7,68 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
 use App\Models\Photo;
+use PhpParser\Node\Expr\Cast\Object_;
 
 class ProductsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::guard('api')->user();
-        if($user->hasRole('farmer')){
+
+        if ($user->hasRole('farmer')) {
             $products = Product::where('user_id', $user->id)
-                            ->orderBy('created_at', 'desc')
-                            ->get();
-            $products = $products->map(function ($pt) {
+                            ->orderBy('created_at', 'desc');
+
+            // Filtrar por búsqueda
+            if ($request->has('search')) {
+                $products = $this->search($request, $products);
+            }
+
+            // Obtener resultados y reducir datos
+            $result = $products->get()->transform(function ($pt) {
                 return $this->reduce_data($pt);
             });
-            return response()->json(["data"=>$products]);
-        }elseif($user->hasRole('client')){
+
+            // Respuesta
+            return response()->json(["data" => $result]);
+        } elseif ($user->hasRole('client')) {
             $products = Product::where('active', true)
-                            ->orderBy('created_at', 'desc')
-                            ->get();
-            $products = $products->map(function ($pt) {
+                            ->orderBy('created_at', 'desc');
+
+            // Filtrar por búsqueda
+            if ($request->has('search')) {
+                $products = $this->search($request, $products);
+            }
+
+            // Obtener resultados y reducir datos
+            $result = $products->get()->transform(function ($pt) {
                 return $this->reduce_data($pt);
             });
-            return response()->json(["data"=>$products]);
+
+            // Respuesta
+            return response()->json(["data" => $result]);
         }
-        return response()->json(["error"=>"Tu usuario no cuenta con un rol indicado"], 400);;
+
+        return response()->json(["error" => "Tu usuario no cuenta con un rol indicado"], 400);
     }
+
+    // ...
+
+    // En la función search
+    public function search(Request $request, $products)
+    {
+        // Obtén el parámetro de búsqueda desde la URL
+        $parameter = $request->query('search_parameter', '');
+
+        // Utiliza Eloquent para realizar la búsqueda
+        return $products->whereHas('productType', function ($query) use ($parameter) {
+            $query->where('name', 'like', "%$parameter%");
+        });
+    }
+
 
     public function show(string $id)
     {

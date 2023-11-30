@@ -92,18 +92,25 @@ class UsersController extends Controller
         ]]);
     }
 
-    public function find_user(Request $request)
-    {
+    public function find_user(Request $request){
         if ($request->has('name')) {
             $name = $request->input('name');
             $users = User::whereRaw("LOWER(first_name) LIKE LOWER(?) OR LOWER(last_name) LIKE LOWER(?) OR email LIKE ?", ["%{$name}%", "%{$name}%", "%{$name}%"])
                 ->orderBy('first_name')
                 ->get();
+
+            $users = $users->map(function ($user) {
+                $user['role'] = $user->getRoleNames()->first();
+                return $user;
+            });
+
             // Retornar los resultados en formato JSON
             return response()->json(['data' => $users]);
         }
+
         return response()->json(['error' => "No se encontró un nombre, apellido o e-mail"], 400);
     }
+
 
     public function destroy(string $id)
     {
