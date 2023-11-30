@@ -28,16 +28,28 @@ class FarmersController extends Controller
         return response()->json([
             "data" => [
                 "completed_orders" => [
-                    "week" => $this->orders_last_week($completed_orders),
-                    "month" => $this->orders_last_month($completed_orders),
-                    "six_months" => $this->orders_last_six_months($completed_orders)
+                    "week" => array_sum($this->orders_last_week($completed_orders)),
+                    "month" => array_sum($this->orders_last_month($completed_orders)),
+                    "six_months" => array_sum($this->orders_last_six_months($completed_orders))
                 ],
-                "pending_orders" => $pending_orders->count(),
-                "canceled_orders" => $canceled_orders->count(),
-                "active_products" => $active_products->count(),
+                "pending_orders" => [
+                    "week" => array_sum($this->orders_last_week($pending_orders)),
+                    "month" => array_sum($this->orders_last_month($pending_orders)),
+                    "six_months" => array_sum($this->orders_last_six_months($pending_orders))
+                ],
+                "canceled_orders" => [
+                    "week" => array_sum($this->orders_last_week($canceled_orders)),
+                    "month" => array_sum($this->orders_last_month($canceled_orders)),
+                    "six_months" => array_sum($this->orders_last_six_months($canceled_orders))
+                ],
+                "active_products" => [
+                    "week" => array_sum($this->orders_last_week($active_products)),
+                    "month" => array_sum($this->orders_last_month($active_products)),
+                    "six_months" => array_sum($this->orders_last_six_months($active_products))
+                ],
                 "orders_last_week" => $this->orders_last_week(Order::all()),
-                "orders_last_month" => $this->orders_last_month(),
-                "orders_last_six_months" => $this->orders_last_six_months()
+                "orders_last_month" => $this->orders_last_month(Order::all()),
+                "orders_last_six_months" => $this->orders_last_six_months(Order::all())
             ]
         ]);
     }
@@ -68,7 +80,7 @@ class FarmersController extends Controller
         return $ordersByDay;
     }
 
-    public function orders_last_month(){
+    public function orders_last_month($orders){
         // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
         $startOfWeek = Carbon::now()->startOfWeek()->subDay();
         // Inicializa un array para almacenar los resultados por semana
@@ -77,26 +89,22 @@ class FarmersController extends Controller
         for ($i = 0; $i < 4; $i++) {
             $startOfWeek->subWeek(); // Retrocede una semana
             $weekNumber = Carbon::now()->diffInWeeks($startOfWeek); // Número de semana
-            $ordersByWeek["Semana $weekNumber"] = Order::whereBetween('created_at', [$startOfWeek->copy()->startOfWeek(), $startOfWeek->copy()->endOfWeek()])->count();
+            $ordersByWeek["Semana $weekNumber"] = $orders->whereBetween('created_at', [$startOfWeek->copy()->startOfWeek(), $startOfWeek->copy()->endOfWeek()])->count();
         }
         return $ordersByWeek;
     }
 
-    public function orders_last_six_months() {
-        // Obtén la fecha de inicio para el primer día del mes anterior
+    public function orders_last_six_months($orders) {
         $startOfMonth = Carbon::now()->subMonth()->startOfMonth();
-
-        // Inicializa un array para almacenar los resultados por mes
         $ordersByMonth = [];
 
-        // Realiza la consulta para cada mes de los últimos 6 meses
         for ($i = 0; $i < 6; $i++) {
-            $monthName = $startOfMonth->copy()->format('F'); // Nombre del mes
-            $ordersByMonth[$monthName] = Order::whereYear('created_at', $startOfMonth->year)
-                ->whereMonth('created_at', $startOfMonth->month)
-                ->count();
+            $monthName = $startOfMonth->copy()->format('F');
+            $ordersByMonth[$monthName] = $orders->filter(function ($order) use ($startOfMonth) {
+                return $order->created_at->year == $startOfMonth->year &&
+                       $order->created_at->month == $startOfMonth->month;
+            })->count();
 
-            // Retrocede al primer día del mes anterior
             $startOfMonth->subMonth();
         }
 
