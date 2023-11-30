@@ -55,16 +55,13 @@ class ProductsController extends Controller
         return response()->json(["error" => "Tu usuario no cuenta con un rol indicado"], 400);
     }
 
-    // ...
-
-    // En la función search
     public function search(Request $request, $products)
     {
         // Obtén el parámetro de búsqueda desde la URL
-        $parameter = $request->query('search_parameter', '');
+        $parameter = $request->query('search', '');
 
         // Utiliza Eloquent para realizar la búsqueda
-        return $products->whereHas('productType', function ($query) use ($parameter) {
+        return $products->whereHas('product_type', function ($query) use ($parameter) {
             $query->where('name', 'like', "%$parameter%");
         });
     }
