@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
 use App\Models\User;
+use App\Models\Photo;
 
 class OrdersController extends Controller
 {
@@ -139,12 +140,34 @@ class OrdersController extends Controller
 
     private function complete_data(object $order){
         $client = User::find($order->client_id);
-        $photo = "";
-        $phone = "";
+        $p_photo = "";
+        $p_photos = Photo::where('product_id', $order->product_id);
 
         if($client->user_data){
-            $photo = $client->user_data->photo;
-            $phone = $client->user_data->phone;
+            $client_data = [
+                "id" => $order->client_id,
+                "name" => $client->first_name." ".$client->last_name,
+                "email" => $client->email,
+                "phone" => $client->user_data->phone,
+                "photo" => $client->user_data->photo,
+                "street" => $client->user_data->street,
+                "ext_num"=> $client->user_data->ext_num,
+                "int_num" => $client->user_data->int_num,
+                "suburb" => $client->user_data->suburb,
+                "city" => $client->user_data->city,
+                "state" => $client->user_data->state,
+                "zip_code" => $client->user_data->zip_code,
+            ];
+        }else{
+            $client_data = [
+                "id" => $order->client_id,
+                "name" => $client->first_name." ".$client->last_name,
+                "email" => $client->email,
+            ];
+        }
+
+        if($p_photos){
+            $p_photo = $p_photos->first()->photo;
         }
 
         $data = [
@@ -152,15 +175,14 @@ class OrdersController extends Controller
             "product" => [
                 "id" => $order->product->id,
                 "name" => $order->product->product_type->name,
+                "category" => $order->product->product_type->category->name,
                 "cutoff_date" => $order->product->cutoff_date,
-                "description" => $order->product->description
+                "price_per_measure" => $order->product->price_per_measure,
+                "description" => $order->product->description,
+                "photo" => $p_photo
             ],
-            "client" => [
-                "id" => $order->client_id,
-                "name" => $client->first_name." ".$client->last_name,
-                "phone" => $phone,
-                "photo" => $photo
-            ],
+
+            "client" => $client_data,
             "measure" => [
                 "id" => $order->unit_of_measurement->id,
                 "name" => $order->unit_of_measurement->name,

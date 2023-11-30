@@ -16,13 +16,6 @@ class FarmersController extends Controller
 {
     public function dashboard(){
         $user = Auth::guard('api')->user();
-        //Ganancias
-        /* $completed_orders = Order::where("farmer_id", $user->id)->where("status", 'Completado')->get();
-        $sales = 0;
-        foreach ($completed_orders as $item) {
-            $sales += $item['total'];
-        }*/
-
         //Ordenes completadas
         $completed_orders = Order::where("farmer_id", $user->id)->where("status", 'Completado')->get();
         //Ordenes pendientes
@@ -32,41 +25,57 @@ class FarmersController extends Controller
         //Productos activos
         $active_products = Product::where("user_id", $user->id)->where("active", true)->get();
 
-       // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
-        $startOfWeek = Carbon::now()->startOfWeek()->subDay();
-
-        // Inicializa un array para almacenar los resultados por día
-        $ordersByDay = [];
-
-        // Realiza la consulta para cada día de la semana
-        for ($i = 0; $i < 6; $i++) {
-            $day = $startOfWeek->copy()->subDays($i)->format('l'); // Obtén el nombre del día
-            $ordersByDay[$day] = Order::whereDate('created_at', $startOfWeek->subDays($i)->toDateString())->count();
-        }
-
-        // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
-        $startOfWeek = Carbon::now()->startOfWeek()->subDay();
-
-        // Inicializa un array para almacenar los resultados por semana
-        $ordersByWeek = [];
-
-        // Realiza la consulta para cada semana del mes
-        for ($i = 0; $i < 4; $i++) {
-            $startOfWeek->subWeek(); // Retrocede una semana
-            $weekNumber = Carbon::now()->diffInWeeks($startOfWeek) + 1; // Número de semana
-            $ordersByWeek["Semana $weekNumber"] = Order::whereBetween('created_at', [$startOfWeek->copy()->startOfWeek(), $startOfWeek->copy()->endOfWeek()])->count();
-        }
-
         return response()->json([
             "data" => [
                 "completed_orders" => $completed_orders->count(),
                 "pending_orders" => $pending_orders->count(),
                 "canceled_orders" => $canceled_orders->count(),
                 "active_products" => $active_products->count(),
-                "orders_last_week" => $ordersByDay,
-                "orders_last_month" => $ordersByWeek
+                "orders_last_week" => $this->orders_last_week(),
+                "orders_last_month" => $this->orders_last_month(),
+                "orders_last_six_months" => $this->orders_last_six_months()
             ]
         ]);
+    }
+
+    public function orders_last_week(){
+        // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
+        $startOfWeek = Carbon::now()->startOfWeek()->subDay();
+
+        // Inicializa un array para almacenar los resultados por día
+        $ordersByDay = [];
+
+        // Días de la semana en el orden correcto a partir del día actual
+        $weekdays = collect(['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']);
+
+        // Obtén el índice del día actual y reorganiza el array de días
+        $currentIndex = $weekdays->search(Carbon::now()->translatedFormat('l'));
+        $weekdays = $weekdays->merge($weekdays->splice(0, $currentIndex));
+
+        // Realiza la consulta para cada día de la semana
+        foreach ($weekdays as $day) {
+            $ordersByDay[$day] = Order::whereDate('created_at', $startOfWeek->copy()->toDateString())->count();
+            $startOfWeek->subDay();
+        }
+
+        return $ordersByDay;
+    }
+
+    public function orders_last_month(){
+        // Obtén la fecha de inicio para la semana (hoy es miércoles, retrocede hasta el martes)
+        $startOfWeek = Carbon::now()->startOfWeek()->subDay();
+        // Inicializa un array para almacenar los resultados por semana
+        $ordersByWeek = [];
+        // Realiza la consulta para cada semana del mes
+        for ($i = 0; $i < 4; $i++) {
+            $startOfWeek->subWeek(); // Retrocede una semana
+            $weekNumber = Carbon::now()->diffInWeeks($startOfWeek); // Número de semana
+            $ordersByWeek["Semana $weekNumber"] = Order::whereBetween('created_at', [$startOfWeek->copy()->startOfWeek(), $startOfWeek->copy()->endOfWeek()])->count();
+        }
+        return $ordersByWeek;
+    }
+
+    public function orders_last_six_months(){
     }
 
     public function top_sales(){
