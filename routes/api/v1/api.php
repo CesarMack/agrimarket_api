@@ -46,6 +46,14 @@ Route::middleware(['auth:api', 'App\Http\Middleware\CheckAdmin'])->group(functio
             Route::post('/{id}', 'App\Http\Controllers\ProductTypesController@update');
             Route::post('/{id}/active', 'App\Http\Controllers\ProductTypesController@destroy');
         });
+        Route::prefix('/backups')->group(function(){
+            Route::post('/makeFullBackup', 'App\Http\Controllers\BackupsController@backupFullDatabase');
+            Route::post('/restoreFullBackup', 'App\Http\Controllers\BackupsController@restoreFullDatabase');
+            Route::post('/makeDifferentialBackup', 'App\Http\Controllers\BackupsController@backupDifferentialDatabase');
+            Route::post('/restoreDifferentialBackup/{id}', 'App\Http\Controllers\BackupsController@restoreDifferentialDatabase');
+            Route::post('/deleteDifferentialBackup/{id}', 'App\Http\Controllers\BackupsController@deleteDifferentialDatabase');
+            Route::get('/DifferentialBackup', 'App\Http\Controllers\BackupsController@getBackups');
+        });
     });
 });
 Route::middleware(['auth:api', 'App\Http\Middleware\CheckFarmer'])->group(function () {
